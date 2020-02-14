@@ -11,7 +11,7 @@ OBJ_PATH = ./obj/
 SRC = $(addprefix $(SRC_PATH),$(N_SRCS))
 OBJ = $(addprefix $(OBJ_PATH),$(OBJ_NAME))
 INC = -I $(INC_PATH)  
-HEADERS := $(addprefix $(INC_PATH)/, malloc.h)
+HEADERS := $(addprefix $(INC_PATH)/, ft_ssl.h)
 
 OBJ_NAME = $(N_SRCS:.c=.o)
 
