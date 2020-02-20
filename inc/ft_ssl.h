@@ -1,4 +1,10 @@
 
+typedef enum	s_hash_type
+{
+	md5_hash = 0,
+	sha256_hash
+}	t_hash_type;
+
 typedef	enum	s_errors
 {
 	illegal_option = -1,
