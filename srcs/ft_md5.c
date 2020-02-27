@@ -14,10 +14,10 @@ typedef struct s_letters
 
 uint32_t 	k[64] = {0};
 
-int 	r[64] = {	7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
-					5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
-					4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
-					6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21};
+int 	r[64] = {	 7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,  7, 12, 17, 22,
+					 5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,  5,  9, 14, 20,
+					 4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,  4, 11, 16, 23,
+					 6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21};
 
 void	init_k(void)
 {
@@ -36,14 +36,14 @@ void	ft_algo_md5(uint8_t *msg, t_letters *l)
 	uint32_t temp;
 	uint32_t f;
 	uint32_t g;
-	uint32_t w[16];
+	uint32_t w[16] = {0};
 
 	for (int j = 0; j < 16; j++)
 	{
-		w[j] = msg[j * 4] << 24;
-		w[j] |= msg[j * 4 + 1] << 16;
-		w[j] |= msg[j * 4 + 2] << 8;
-		w[j] |= msg[j * 4 + 3] ;
+		w[j] |= msg[j * 4];
+		w[j] |= msg[j * 4 + 1] << 8;
+		w[j] |= msg[j * 4 + 2] << 16;
+		w[j] |= msg[j * 4 + 3] << 24;
 		printf("0x%.8x\n", w[j]);
 	}
 	i = 0;
@@ -72,7 +72,7 @@ void	ft_algo_md5(uint8_t *msg, t_letters *l)
 		temp = l->d;
 		l->d = l->c;
 		l->c = l->b;
-		l->b = ((l->a + f + k[i] + w[g]) << r[i]) + l->b;
+		l->b = ((uint64_t)(l->a + f + k[i] + w[g]) << r[i]) + l->b;
 		l->a = temp;
 		i++;
 	}
@@ -155,6 +155,6 @@ char	*md5_hash(const char *str)
 		printf("0x%.2X ", (unsigned char)msg[i]);
 			i++;
 	}
-	printf("\n%.2X | %.2X | %.2X | %.2X\n", let.a, let.b, let.c, let.d);
+	printf("\n%.2X | %.2X | %.2X | %.2X\n", h0, h1, h2, h3);
 	return (msg);
 }
