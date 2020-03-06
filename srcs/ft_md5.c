@@ -69,6 +69,8 @@ void	ft_algo_md5(uint32_t *w, t_letters *let)
 {
 	uint32_t f, g, tmp;
 
+	for (int i = 0; i < 16; i++)
+		printf("0x%.8x\n", w[i]);
 	for (int i = 0; i < 64; i++)
 	{
 		if (i < 16) {
@@ -93,16 +95,15 @@ void	ft_algo_md5(uint32_t *w, t_letters *let)
 		let->b = left_rotate(let->a + f + k[i] + w[g], r[i]) + let->b;
 		let->a = tmp;
 	}
-
 }
 
-char *ft_padding(char *s1, const char *s2, uint32_t max_len)
+char *ft_padding(uint8_t *s1, const uint8_t *s2, uint32_t max_len)
 {
 	uint32_t i;
 	uint64_t len;
 
 	i = 0;
-	len = strlen(s2);
+	len = strlen((char *)s2);
 	while (i < len)
 	{
 		s1[i] = s2[i];
@@ -114,42 +115,43 @@ char *ft_padding(char *s1, const char *s2, uint32_t max_len)
 	while (i < 8)
 	{
 		printf("%d et %d\n", max_len - (i + 1), (len >> (i * 8)));
-		s1[max_len - (i + 1)] = (len >> (i * 8));
+		s1[max_len - (8 - i)] = (len >> (i * 8));
 		i++;
 	}
+//debug
+	for (int j = 0; j < 64; j++)
+		printf("%d : s1->0x%.2x\n", j, s1[j]);
+
 	return (s1);
 }
 
 char *md5_hash(const char *str)
 {
-	unsigned w[16] = {0};
-	int i;
-
-
-	unsigned len;
-	unsigned n_block;
-
-	char *msg;
+	int			i;
+	uint32_t	len;
+	uint32_t	n_block;
+	uint8_t		*msg;
 
 	/* Find Size */
 	len = (strlen(str) + 1 + 8) * 8;
 	n_block = (len % 512 == 0) ? len / 512 : len / 512 + 1;
 	len = n_block * 512;
-	msg = (char *)malloc(len / 8);
+	msg = (uint8_t *)malloc(len / 8);
 	bzero((void *)msg, len / 8);
 	/* */
-	msg = ft_padding((char *)msg, str, len / 8);
+	msg = ft_padding(msg, (uint8_t *)str, len / 8);
 
 	t_letters let;
 
 	i = 0;
 	while (i < len)
 	{
+		printf("-----%d-----\n", len);
 		let.a = h0;
 		let.b = h1;
 		let.c = h2;
 		let.d = h3;
-		ft_algo_md5((uint32_t)(msg + (i / 8)), &let);
+		ft_algo_md5((uint32_t *)(msg + (i / 8)), &let);
 		h0 += let.a;
 		h1 += let.b;
 		h2 += let.c;
@@ -160,11 +162,22 @@ char *md5_hash(const char *str)
 	i = 0;
 	while (i < len / 8)
 	{
-		if (i % 8 == 0)
+		if (i % 4 == 0)
+			printf("\n");
 			printf("0x%.2X ", (unsigned char)msg[i]);
 		i++;
 	}
 
-	printf("\n%.2X | %.2X | %.2X | %.2X\n", h0, h1, h2, h3);
+	uint32_t f_table[4];
+
+	f_table[0] = h0;
+	f_table[1] = h1;
+	f_table[2] = h2;
+	f_table[3] = h3;
+		printf("\n");
+	for (i = 0; i < 16; i++)
+		printf("%.2x", ((uint8_t *)f_table)[i]);
+	printf("\n");
+//	printf("\n%.2X | %.2X | %.2X | %.2X\n", h0, h1, h2, h3);
 	return (msg);
 }
