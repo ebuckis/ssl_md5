@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -69,8 +70,6 @@ void	ft_algo_md5(uint32_t *w, t_letters *let)
 {
 	uint32_t f, g, tmp;
 
-	for (int i = 0; i < 16; i++)
-		printf("0x%.8x\n", w[i]);
 	for (int i = 0; i < 64; i++)
 	{
 		if (i < 16) {
@@ -97,7 +96,7 @@ void	ft_algo_md5(uint32_t *w, t_letters *let)
 	}
 }
 
-char *ft_padding(uint8_t *s1, const uint8_t *s2, uint32_t max_len)
+uint8_t *ft_padding(uint8_t *s1, const uint8_t *s2, uint32_t max_len)
 {
 	uint32_t i;
 	uint64_t len;
@@ -114,13 +113,9 @@ char *ft_padding(uint8_t *s1, const uint8_t *s2, uint32_t max_len)
 	len *= 8;
 	while (i < 8)
 	{
-		printf("%d et %d\n", max_len - (i + 1), (len >> (i * 8)));
 		s1[max_len - (8 - i)] = (len >> (i * 8));
 		i++;
 	}
-//debug
-	for (int j = 0; j < 64; j++)
-		printf("%d : s1->0x%.2x\n", j, s1[j]);
 
 	return (s1);
 }
@@ -146,7 +141,6 @@ char *md5_hash(const char *str)
 	i = 0;
 	while (i < len)
 	{
-		printf("-----%d-----\n", len);
 		let.a = h0;
 		let.b = h1;
 		let.c = h2;
@@ -159,25 +153,15 @@ char *md5_hash(const char *str)
 		i += 512;
 	}
 
-	i = 0;
-	while (i < len / 8)
-	{
-		if (i % 4 == 0)
-			printf("\n");
-			printf("0x%.2X ", (unsigned char)msg[i]);
-		i++;
-	}
-
 	uint32_t f_table[4];
 
 	f_table[0] = h0;
 	f_table[1] = h1;
 	f_table[2] = h2;
 	f_table[3] = h3;
-		printf("\n");
+
 	for (i = 0; i < 16; i++)
 		printf("%.2x", ((uint8_t *)f_table)[i]);
 	printf("\n");
-//	printf("\n%.2X | %.2X | %.2X | %.2X\n", h0, h1, h2, h3);
-	return (msg);
+	return ((char *)msg);
 }
