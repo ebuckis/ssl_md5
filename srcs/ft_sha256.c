@@ -16,17 +16,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-typedef struct s_letters
-{
-	uint32_t	a;
-	uint32_t	b;
-	uint32_t	c;
-	uint32_t	d;
-	uint32_t	e;
-	uint32_t	f;
-	uint32_t	g;
-	uint32_t	h;
-}t_letters;
+#include "ft_sha256.h"
 
 uint32_t k[64] = {
 	0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
@@ -46,14 +36,6 @@ uint32_t k[64] = {
 	6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21
 };*/
 
-uint32_t	h0 = 0x6a09e667;
-uint32_t	h1 = 0xbb67ae85;
-uint32_t	h2 = 0x3c6ef372;
-uint32_t	h3 = 0xa54ff53a;
-uint32_t	h4 = 0x510e527f;
-uint32_t	h5 = 0x9b05688c;
-uint32_t	h6 = 0x1f83d9ab;
-uint32_t	h7 = 0x5be0cd19;
 
 uint32_t	right_rotate(uint32_t val, int n)
 {
@@ -77,7 +59,7 @@ uint32_t	bit_reverse32(uint32_t val)
 	return (tmp);
 }
 
-void	ft_algo_sha256(uint32_t *w, t_letters *let)
+void	ft_algo_sha256(uint32_t *w, t_var *let)
 {
 	uint32_t s0, s1, tmp1, tmp2, ch;
 
@@ -147,52 +129,55 @@ uint8_t *ft_padding(uint8_t *s1, const uint8_t *s2, uint32_t max_len)
 	return (s1);
 }
 
-char *sha256_hash(const char *str)
+void	sha265_find_size(t_sha256 *this, char *str)
+{
+	this->len = (strlen(str) + 1 + 8) * 8;
+	if (this->len % 512 == 0)
+	{
+		this->n_block = this->len / 512;
+	}
+	else
+	{
+		this->n_block = this->len / 512 + 1;
+	}
+	this->len = this->n_block * 512;
+	this->msg = (uint8_t *)malloc(this->len / 8);
+	bzero((void *)this->msg, this->len / 8);
+}
+void	sha265_sum_struct(t_sha256 *this)
+{
+	this->result.h0 += this->tmp.h0;
+	this->result.h1 += this->tmp.h1;
+	this->result.h2 += this->tmp.h2;
+	this->result.h3 += this->tmp.h3;
+	this->result.h4 += this->tmp.h4;
+	this->result.h5 += this->tmp.h5;
+	this->result.h6 += this->tmp.h6;
+	this->result.h7 += this->tmp.h7;
+}
+
+char *sha256_run(t_sha256 *this, const char *str)
 {
 	int			i;
-	uint32_t	len;
-	uint32_t	n_block;
-	uint8_t		*msg;
 
-	/* Find Size */
-	len = (strlen(str) + 1 + 8) * 8;
-	n_block = (len % 512 == 0) ? len / 512 : len / 512 + 1;
-	len = n_block * 512;
-	msg = (uint8_t *)malloc(len / 8);
-	bzero((void *)msg, len / 8);
-	/* */
-	msg = ft_padding(msg, (uint8_t *)str, len / 8);
+	sha256_find_size(this, str);
+	this->msg = ft_padding(this->msg, (uint8_t *)str, this->len / 8);
 	
-	for (int j = 0; j < len  / 8; j++)
-		printf("msg[%d] : 0x%.2x\n", j , msg[j]);
-
-	t_letters let;
+	//for (int j = 0; j < this->len  / 8; j++)
+	//	printf("msg[%d] : 0x%.2x\n", j , this->msg[j]);
 
 	i = 0;
-	while (i < len)
+	while (i < this->len)
 	{
-		let.a = h0;
-		let.b = h1;
-		let.c = h2;
-		let.d = h3;
-		let.e = h4;
-		let.f = h5;
-		let.g = h6;
-		let.h = h7;
-		ft_algo_sha256((uint32_t *)(msg + (i / 8)), &let);
-		h0 += let.a;
-		h1 += let.b;
-		h2 += let.c;
-		h3 += let.d;
-		h4 += let.e;
-		h5 += let.f;
-		h6 += let.g;
-		h7 += let.h;
+		//copy struct
+		this->tmp = this->result;
+		ft_algo_sha256((uint32_t *)(this->msg + (i / 8)), &(this.tmp));
+		//sum struct
+		sha256_sum_struct(this);
 		i += 512;
 	}
 
-	uint32_t f_table[8];
-
+/*	uint32_t f_table[8];
 	f_table[0] = h0;
 	f_table[1] = h1;
 	f_table[2] = h2;
@@ -204,6 +189,32 @@ char *sha256_hash(const char *str)
 
 	for (i = 0; i < 8; i++)
 		printf("%.8x ", f_table[i]);
-	printf("\n");
-	return ((char *)msg);
+	printf("\n");*/
+
+	return ((char *)this->msg);
+}
+
+void	sha256_inti(t_sha256 *this)
+{
+	if (this->msg != NULL)
+	{
+		free(this->msg);
+	}
+	this->msg = NULL;
+	this->result.h0 = 0x6a09e667;
+	this->result.h1 = 0xbb67ae85;
+	this->result.h2 = 0x3c6ef372;
+	this->result.h3 = 0xa54ff53a;
+	this->result.h4 = 0x510e527f;
+	this->result.h5 = 0x9b05688c;
+	this->result.h6 = 0x1f83d9ab;
+	this->result.h7 = 0x5be0cd19;
+
+}
+
+int	sha256_create(t_sha256 *this)
+{
+	this->run = sha256_run;
+	this->msg = NULL;
+
 }
