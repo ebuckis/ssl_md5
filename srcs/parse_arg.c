@@ -1,36 +1,24 @@
 
 #include "ft_ssl.h"
+#include "parse_arg.h"
 
-int		get_target_string(t_ssl *ssl, int fd)
+e_hash_type	get_hash_type(int ac, char **av)
 {
-	//open
-	//read
-	//close
-	ssl->std_in_read = 1;
-	return (1);
-}
-
-int		parse_arg_pqrs(t_ssl *ssl, int ac, char **av)
-{
-	static int	i = 2;
 	int			ret;
+	e_hash_type	i;
+	char		*hash_type[nbr_hash_type];
 
-	ret = 0;
-	if (i == ac && ssl->std_in_read == 0)
-	{//pas d'arg on lit sur stdin
-		ret = get_target_string(ssl, 0);
+	hash_type[md5_type] = "md5";
+	hash_type[sha256_type] = "sha256";
+	if (ac < 2)
+		return (-2);
+	i = md5_type;
+	while (i < nbr_hash_type)
+	{
+		if (strcmp(hash_type[i]))
+			return (i);
 		i++;
 	}
-	else if (i >= ac)
-	{
-		return (0);
-	}
-	else
-	{
-		while (i < ac && parse_opt(av[i], ssl))
-		{
-			i++;
-		}
-	}
-	return (1);
+	return (-1);
 }
+
