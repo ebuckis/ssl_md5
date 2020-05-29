@@ -136,10 +136,17 @@ char	*ft_read_file(char *filename)
 int main(int ac, char **av)
 {
 	int i = 1;
-	while (i < ac)
+	if (ac == 1)
 	{
-		printf("%s\n", ft_read_file(av[i]));
-		i++;
+		printf("%s\n", ft_read_fd(STDIN_FILENO));
+	}
+	else
+	{	
+		while (i < ac)
+		{
+			printf("%s\n", ft_read_file(av[i]));
+			i++;
+		}
 	}
 	return 0;
 }
