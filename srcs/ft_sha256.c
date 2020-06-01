@@ -87,20 +87,20 @@ void	ft_algo_sha256(uint32_t *w, t_var *let)
 	printf("\n");
 	for (int i = 0; i < 64; i++)
 	{
-		s1 = right_rotate(let->e, 6) ^ right_rotate(let->e, 11) ^ right_rotate(let->e, 25);
-		ch = (let->e & let->f) ^ ((~let->e) & let->g);
-		tmp1 = let->h + s1 + ch + k[i] + w[i];
-		s0 = right_rotate(let->a, 2) ^ right_rotate(let->a, 13) ^ right_rotate(let->a, 22);
-		tmp2 = s0 + ((let->a & let->b) ^ (let->a & let->c) ^ (let->b & let->c));
+		s1 = right_rotate(let->h4, 6) ^ right_rotate(let->h4, 11) ^ right_rotate(let->h4, 25);
+		ch = (let->h4 & let->h5) ^ ((~let->h4) & let->h6);
+		tmp1 = let->h7 + s1 + ch + k[i] + w[i];
+		s0 = right_rotate(let->h0, 2) ^ right_rotate(let->h0, 13) ^ right_rotate(let->h0, 22);
+		tmp2 = s0 + ((let->h0 & let->h1) ^ (let->h0 & let->h2) ^ (let->h1 & let->h3));
 
-		let->h = let->g;
-        let->g = let->f;
-        let->f = let->e;
-        let->e = let->d + tmp1;
-        let->d = let->c;
-        let->c = let->b;
-        let->b = let->a;
-        let->a = tmp1 + tmp2;
+		let->h7 = let->h6;
+        let->h6 = let->h5;
+        let->h5 = let->h4;
+        let->h4 = let->h3 + tmp1;
+        let->h3 = let->h2;
+        let->h2 = let->h1;
+        let->h1 = let->h0;
+        let->h0 = tmp1 + tmp2;
 	}
 
 }
@@ -194,7 +194,7 @@ char *sha256_run(t_sha256 *this, const char *str)
 	return ((char *)this->msg);
 }
 
-void	sha256_inti(t_sha256 *this)
+void	sha256_init(t_sha256 *this)
 {
 	if (this->msg != NULL)
 	{

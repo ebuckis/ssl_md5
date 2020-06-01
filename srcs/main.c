@@ -24,7 +24,10 @@ int		hash_type(int ac, char **av, t_ssl *ssl)
 		ssl->hash = sha256_hash;
 	}
 	else
+	{
+		printf("md5 or sha256\n");
 		return (0);
+	}
 	return (1);	
 		
 }
@@ -32,9 +35,9 @@ int		hash_type(int ac, char **av, t_ssl *ssl)
 void 	ssl_init(t_ssl *ssl)
 {
 	ssl->op.p = 0;
+	ssl->op.q = 0;
 	ssl->op.r = 0;
 	ssl->op.s = 0;
-	ssl->op.q = 0;
 	ssl->target = NULL;
 	ssl->result = NULL;
 	ssl->std_in_read = 0;
