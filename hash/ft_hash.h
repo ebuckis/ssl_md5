@@ -5,7 +5,7 @@
 #define		FT_HASH_H
 
 #include	"parser/ft_options.h"
-#include	"hash/ft_hash_type.h"
+#include	"ft_hash_type.h"
 
 typedef struct	s_hash
 {

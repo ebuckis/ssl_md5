@@ -10,4 +10,12 @@ typedef enum eError
 	
 }eError;
 
+typedef struct	s_error
+{
+	char		*error_msg;
+	eError		error_type;
+}				t_error;
+
+int		error_create(t_error *this);
+
 #endif

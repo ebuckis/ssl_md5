@@ -13,14 +13,20 @@ func_ptr_hash
 
 int		main(int ac, char **av)
 {
-	int			ret;
+	t_error		error;
 	char		msg;
 	t_parser	parser;
 	t_hash		hash;
+	t_hash_type	type;
 
-	ret = parser_create(&parser, ac, av);
+	error_create(&error);
+	ret = parser_create(&parser, ac, av, &error);
 	if (ret != ret_ok)
-		return (display_errror(ret));
+		return (display_error(ret));
+
+	if ((type = parser.get_type(&parser)) == -1)
+		return (display_errortype(type));
+
 	hash_create(&hash, parser.get_type(&parser));//maybe get the return
 	while ((ret = parser.get_message(&parser, &msg)) != ret_eof)
 	{
