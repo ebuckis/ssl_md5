@@ -2,6 +2,8 @@
 /*
 ** header
 */
+
+
 /*
 func_ptr_parse
 func_ptr_hash
@@ -30,7 +32,7 @@ int		main(int ac, char **av)
 	hash_create(&hash, parser.get_type(&parser));//maybe get the return
 	while ((ret = parser.get_message(&parser, &msg)) != ret_eof)
 	{
-		hash.new(&hash, msg);
+		hash.newone(&hash, msg);
 		hash.display(&hash);
 	}
 	return (0);

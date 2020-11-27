@@ -14,6 +14,9 @@ typedef struct	s_error
 {
 	char		*error_msg;
 	eError		error_type;
+
+	void		(*run)(struct t_error *this);
+
 }				t_error;
 
 int		error_create(t_error *this);

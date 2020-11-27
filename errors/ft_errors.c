@@ -15,13 +15,13 @@ static void	error_diplayOption(t_error *this)
 
 static void	error_run(t_error *this)
 {
-	if (this->error_type != no_error)
+	if (this->error_type != 0)
 	{
 		//manage error
 	}
 }
 
-int		error_create(t_error *this)
+int			error_create(t_error *this)
 {
 	this->run = error_run;
 }

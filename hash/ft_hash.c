@@ -4,7 +4,7 @@
 
 /* Privates members */
 
-static void hash_free(t_hash *obj)
+static void hash_free(t_hash *this)
 {
 
 }
@@ -12,18 +12,19 @@ static void hash_free(t_hash *obj)
 
 /** Public members */
 
-static int	hash_newone(t_hash *obj, char *msg)
+static int	hash_newone(t_hash *this, char *msg)
 {
-	
+	// hash type
 }
 
-static void	hash_display(t_hash *obj, t_options opt)
+static void	hash_display(t_hash *this, t_options opt)
 {
+	//useless ?
 
 	//free all 
 }
 
-int		hash_create(t_hash *obj, t_hash_type type)
+int		hash_create(t_hash *this, t_hash_type type)
 {
 	//assign good method
 	int	(* hash_type_init[nbr_hash_type])(/*arg*/);
