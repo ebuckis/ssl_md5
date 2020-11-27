@@ -96,23 +96,27 @@ void	ft_algo_md5(uint32_t *w, t_buffer *buf)
 	}
 }
 
-uint8_t *ft_padding(uint8_t *s1, const uint8_t *s2, uint64_t len)
+uint8_t *ft_padding(uint8_t *s1, const uint8_t *s2, uint32_t max_len)
 {
 	uint32_t i;
+	uint64_t len;
 
 	i = 0;
-	while (s2[i] != 0)
+	len = strlen((char *)s2);
+	while (i < len)
 	{
 		s1[i] = s2[i];
 		i++;
 	}
-	s1[i] = 0x80;//msb to 1
+	s1[i] = 0x80;
 	i = 0;
-	while (56 + i < 64)
+	len *= 8;//in bits
+	while (i < 8)
 	{
-		s1[56 + i] = (len >> ((8 - i) * 8));//msb first
+		s1[(max_len - 8) + i] = (len >> (i * 8));
 		i++;
 	}
+
 	return (s1);
 }
 
@@ -121,17 +125,17 @@ char *md5_hash(t_hash this, char *str)
 	int			i;
 	uint32_t	len;
 	uint32_t	n_block;
-	uint8_t		msg[64];
+	uint8_t		*msg;
 
 	/* Find Size */
 	len = (strlen(str) + 1 + 8) * 8;//len + 0x1 (8bits) + len (64bits)
 	n_block = (len % 512 == 0) ? (len / 512) : (len / 512 + 1);
 	len = n_block * 512;
 
+	msg = (uint8_t *)malloc(len / 8);
+	bzero((void *)msg, len / 8);
 	/* */
 
-
-	bzero((void *)msg, 64);
 	msg = ft_padding(msg, (uint8_t *)str, len / 8);
 
 	t_buffer buf_tmp;
@@ -149,6 +153,7 @@ char *md5_hash(t_hash this, char *str)
 		final.h3 += buf_tmp.h3;
 		i += 512;//continue in the padding
 	}
+	free(msg);
 
 
 	/************remove this [debug]*****************/
