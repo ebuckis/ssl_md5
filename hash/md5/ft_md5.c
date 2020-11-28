@@ -1,16 +1,10 @@
 
 #include "hash/ft_hash.h"
-#include <stdint.h>
+#include "ft_md5.h"
 
 #include <math.h>
 
-typedef struct s_buffer
-{
-	uint32_t	h0;
-	uint32_t	h1;
-	uint32_t	h2;
-	uint32_t	h3;
-}t_buffer;
+
 
 uint32_t k[64] = {
 	3614090360, 3905402710,  606105819, 3250441966, 4118548399, 1200080426, 2821735955, 4249261313,
@@ -30,12 +24,8 @@ int 	r[64] = {
 	6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21
 };
 
-uint32_t	h0 = 0x67452301;
-uint32_t	h1 = 0xEFCDAB89;
-uint32_t	h2 = 0x98BADCFE;
-uint32_t	h3 = 0x10325476;
 
-uint32_t	left_rotate(uint32_t val, int n)
+uint32_t	left_rotate32(uint32_t val, int n)
 {
 	uint32_t ret;
 
@@ -46,53 +36,45 @@ uint32_t	left_rotate(uint32_t val, int n)
 	return (ret);
 }
 
-uint32_t	f_function(uint32_t x, uint32_t y, uint32_t z)
+uint32_t	md5_bitwise(t_buffer buf, char opt)
 {
-	return ((x & y) | ((~x) & z));
-}
-
-uint32_t	g_function(uint32_t x, uint32_t y, uint32_t z)
-{
-	return ((x & z) | (y & (~z)));
-}
-
-uint32_t	h_function(uint32_t x, uint32_t y, uint32_t z)
-{
-	return (x ^ y ^ z);
-}
-
-uint32_t	i_function(uint32_t x, uint32_t y, uint32_t z)
-{
-	return (y ^ (x | (~z)));
+	if (opt == 'f')
+		return ((buf.b & buf.c) | ((~buf.b) & buf.d));
+	else if (opt == 'g')
+		return ((buf.b & buf.d) | (buf.c & (~buf.d)));
+	else if (opt == 'h')
+		return (buf.b ^ buf.c ^ buf.d);
+	else if (opt == 'i')
+		return (buf.c ^ (buf.b | (~buf.d)));
 }
 
 void	ft_algo_md5(uint32_t *w, t_buffer *buf)
 {
 	uint32_t f, g, tmp;
 
-	for (int i = 0; i < 64; i++)
+	for (int i = 0; i < 64; i++)//512bits -> 64bytes
 	{
 		if (i < 16) {
-			f = f_function(buf->h1, buf->h2, buf->h3);
+			f = md5_bitwise(*buf, 'f');
 			g = i;
 		}
 		else if (i < 32) {
-			f = g_function(buf->h1, buf->h2, buf->h3);
+			f = md5_bitwise(*buf, 'g');
 			g = (5 * i + 1) % 16;
 		}
 		else if (i < 48) {
-			f = h_function(buf->h1, buf->h2, buf->h3);
+			f = md5_bitwise(*buf, 'h');
 			g = (3 * i + 5) % 16;
 		}
 		else if (i < 64) {
-			f = i_function(buf->h1, buf->h2, buf->h3);
+			f = md5_bitwise(*buf, 'i');
 			g = (7 * i) % 16;
 		}
-		tmp = buf->h3;
-		buf->h3 = buf->h2;
-		buf->h2 = buf->h1;
-		buf->h1 = left_rotate(buf->h0 + f + k[i] + w[g], r[i]) + buf->h1;
-		buf->h0 = tmp;
+		tmp = buf->d;
+		buf->d = buf->c;
+		buf->c = buf->b;
+		buf->b = left_rotate32(buf->a + f + k[i] + w[g], r[i]) + buf->b;
+		buf->a = tmp;
 	}
 }
 
@@ -111,9 +93,13 @@ uint8_t *ft_padding(uint8_t *s1, const uint8_t *s2, uint32_t max_len)
 	s1[i] = 0x80;
 	i = 0;
 	len *= 8;//in bits
+/*	uint64_t *tmp_s1;
+	tmp_s1 = (uint64_t *)s1;
+	tmp_s1[(max_len / 8) - 1] = len;*/
+	//TODO: voir si ça fonctionne
 	while (i < 8)
 	{
-		s1[(max_len - 8) + i] = (len >> (i * 8));
+		s1[(max_len - 8) + i] = (len >> (i * 8));//msb first
 		i++;
 	}
 
@@ -123,52 +109,54 @@ uint8_t *ft_padding(uint8_t *s1, const uint8_t *s2, uint32_t max_len)
 char *md5_hash(t_hash this, char *str)
 {
 	int			i;
-	uint32_t	len;
-	uint32_t	n_block;
-	uint8_t		*msg;
+	t_md5		md5;
 
 	/* Find Size */
-	len = (strlen(str) + 1 + 8) * 8;//len + 0x1 (8bits) + len (64bits)
-	n_block = (len % 512 == 0) ? (len / 512) : (len / 512 + 1);
-	len = n_block * 512;
+	md5.len = (strlen(str) + 1 + 8) * 8;//len + 0x1 (8bits) + len (64bits)
+	n_block = (md5.len % 512 == 0) ? (md5.len / 512) : (md5.len / 512 + 1);
+	md5.len = md5.n_block * 512;
 
-	msg = (uint8_t *)malloc(len / 8);
-	bzero((void *)msg, len / 8);
+	md5.msg = (uint8_t *)malloc(md5.len / 8);
+	bzero((void *)md5.msg, md5.len / 8);
 	/* */
 
-	msg = ft_padding(msg, (uint8_t *)str, len / 8);
+	md5.msg = ft_padding(md5.msg, (uint8_t *)str, md5.len / 8);
 
 	t_buffer buf_tmp;
-	t_buffer final;
+
+	md5.buf.a = 0x67452301;
+	md5.buf.b = 0xEFCDAB89;
+	md5.buf.c = 0x98BADCFE;
+	md5.buf.d = 0x10325476;
 
 	i = 0;
-	while (i < len)
+	while (i < md5.len)
 	{
 		/* copy struct */
-		buf_tmp = final;
-		ft_algo_md5((uint32_t *)(msg + (i / 8)), &buf_tmp);
-		final.h0 += buf_tmp.h0;
-		final.h1 += buf_tmp.h1;
-		final.h2 += buf_tmp.h2;
-		final.h3 += buf_tmp.h3;
+		buf_tmp = md5.buf;
+		ft_algo_md5((uint32_t *)(md5.msg + (i / 8)), &buf_tmp);
+		md5.buf.a += buf_tmp.a;
+		md5.buf.b += buf_tmp.b;
+		md5.buf.c += buf_tmp.c;
+		md5.buf.d += buf_tmp.d;
 		i += 512;//continue in the padding
 	}
-	free(msg);
+	free(md5.msg);
 
 
 	/************remove this [debug]*****************/
 	uint32_t f_table[4];
 
-	f_table[0] = h0;
-	f_table[1] = h1;
-	f_table[2] = h2;
-	f_table[3] = h3;
+	f_table[0] = md5.buf.a;
+	f_table[1] = md5.buf.b;
+	f_table[2] = md5.buf.c;
+	f_table[3] = md5.buf.d;
 
 	for (i = 0; i < 16; i++)
 		printf("%.2x", ((uint8_t *)f_table)[i]);
 	printf("\n");
 	/************remove this [debug]*****************/
-	return ((char *)msg);
+	return ((char *)md5.msg);
 }
 
 static void	md5_free(t_hash *this)
