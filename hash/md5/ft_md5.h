@@ -22,6 +22,6 @@ typedef struct	s_md5
 	t_md5algo	algo;
 	uint32_t	len;
 	uint32_t	n_block;
-	uint8_t		*msg
+	uint8_t		*msg;
 
 }				t_md5;

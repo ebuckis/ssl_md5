@@ -24,7 +24,6 @@ int 	r[64] = {
 	6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21,  6, 10, 15, 21
 };
 
-
 uint32_t	left_rotate32(uint32_t val, int n)
 {
 	uint32_t ret;
@@ -38,7 +37,7 @@ uint32_t	left_rotate32(uint32_t val, int n)
 
 uint32_t	md5_bitwise(t_buffer buf, char opt)
 {
-	if (opt == 'f')
+	if (opt == 'algo.f')
 		return ((buf.b & buf.c) | ((~buf.b) & buf.d));
 	else if (opt == 'g')
 		return ((buf.b & buf.d) | (buf.c & (~buf.d)));
@@ -48,33 +47,37 @@ uint32_t	md5_bitwise(t_buffer buf, char opt)
 		return (buf.c ^ (buf.b | (~buf.d)));
 }
 
-void	ft_algo_md5(uint32_t *w, t_buffer *buf)
+void	ft_algo_md5(t_buffer *buf, uint32_t *w)
 {
-	uint32_t f, g, tmp;
+	uint32_t	tmp;
+	int16_t		i;
+	t_md5algo	algo;
 
-	for (int i = 0; i < 64; i++)//512bits -> 64bytes
+	i = 0;
+	while (i < 64)//512bits -> 64bytes
 	{
 		if (i < 16) {
-			f = md5_bitwise(*buf, 'f');
-			g = i;
+			algo.f = md5_bitwise(*buf, 'algo.f');
+			algo.g = i;
 		}
 		else if (i < 32) {
-			f = md5_bitwise(*buf, 'g');
-			g = (5 * i + 1) % 16;
+			algo.f = md5_bitwise(*buf, 'g');
+			algo.g = (5 * i + 1) % 16;
 		}
 		else if (i < 48) {
-			f = md5_bitwise(*buf, 'h');
-			g = (3 * i + 5) % 16;
+			algo.f = md5_bitwise(*buf, 'h');
+			algo.g = (3 * i + 5) % 16;
 		}
 		else if (i < 64) {
-			f = md5_bitwise(*buf, 'i');
-			g = (7 * i) % 16;
+			algo.f = md5_bitwise(*buf, 'i');
+			algo.g = (7 * i) % 16;
 		}
 		tmp = buf->d;
 		buf->d = buf->c;
 		buf->c = buf->b;
-		buf->b = left_rotate32(buf->a + f + k[i] + w[g], r[i]) + buf->b;
+		buf->b = left_rotate32(buf->a + algo.f + algo.k[i] + w[algo.g], algo.r[i]) + buf->b;
 		buf->a = tmp;
+		i++;
 	}
 }
 
@@ -113,7 +116,7 @@ char *md5_hash(t_hash this, char *str)
 
 	/* Find Size */
 	md5.len = (strlen(str) + 1 + 8) * 8;//len + 0x1 (8bits) + len (64bits)
-	n_block = (md5.len % 512 == 0) ? (md5.len / 512) : (md5.len / 512 + 1);
+	md5.n_block = (md5.len % 512 == 0) ? (md5.len / 512) : (md5.len / 512 + 1);
 	md5.len = md5.n_block * 512;
 
 	md5.msg = (uint8_t *)malloc(md5.len / 8);
@@ -123,11 +126,6 @@ char *md5_hash(t_hash this, char *str)
 	md5.msg = ft_padding(md5.msg, (uint8_t *)str, md5.len / 8);
 
 	t_buffer buf_tmp;
-
-	md5.buf.a = 0x67452301;
-	md5.buf.b = 0xEFCDAB89;
-	md5.buf.c = 0x98BADCFE;
-	md5.buf.d = 0x10325476;
 
 	i = 0;
 	while (i < md5.len)
@@ -174,6 +172,13 @@ int		md5_init(t_hash *this)
 	this->newone = md5_newone;//prepare
 	this->hash = md5_hash;//hash
 	this->free = md5_free;//free memory
+	this->md5.buf.a = 0x67452301;
+	this->md5.buf.b = 0xEFCDAB89;
+	this->md5.buf.c = 0x98BADCFE;
+	this->md5.buf.d = 0x10325476;
+	this->md5.algo.k = k;//mem copy
+	this->md5.algo.r = r;//mem copy
+
 	//pointeur de fonction
 	//init variable
 }
